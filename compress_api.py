@@ -26,7 +26,7 @@ def compress_pdf():
             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
 
             img_io = io.BytesIO()
-            img.save(img_io, format='JPEG', quality=40)  # Lower quality = smaller size
+            img.save(img_io, format='JPEG', quality=70)  # Balanced compression
             img_bytes = img_io.getvalue()
 
             new_page = new_doc.new_page(width=pix.width, height=pix.height)
