@@ -1,10 +1,12 @@
 from flask import Flask, request, send_file
 from flask_cors import CORS
 import fitz  # PyMuPDF
+from PIL import Image
 import os
+import io
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for Netlify or other origins
+CORS(app)
 
 @app.route('/compress', methods=['POST'])
 def compress_pdf():
@@ -14,20 +16,21 @@ def compress_pdf():
         output_path = 'compressed.pdf'
         file.save(input_path)
 
-        # Open original PDF
         doc = fitz.open(input_path)
         new_doc = fitz.open()
-
-        # Re-render each page as image and insert into new PDF
-        zoom = 0.5  # 50% scale for compression
+        zoom = 0.5
         mat = fitz.Matrix(zoom, zoom)
 
         for page in doc:
             pix = page.get_pixmap(matrix=mat)
-            img_bytes = pix.tobytes("jpeg")
-            img_page = new_doc.new_page(width=pix.width, height=pix.height)
-            img_rect = fitz.Rect(0, 0, pix.width, pix.height)
-            img_page.insert_image(img_rect, stream=img_bytes)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+
+            img_io = io.BytesIO()
+            img.save(img_io, format='JPEG', quality=40)  # Lower quality = smaller size
+            img_bytes = img_io.getvalue()
+
+            new_page = new_doc.new_page(width=pix.width, height=pix.height)
+            new_page.insert_image(fitz.Rect(0, 0, pix.width, pix.height), stream=img_bytes)
 
         new_doc.save(output_path, garbage=4, deflate=True)
         new_doc.close()
