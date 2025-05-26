@@ -18,15 +18,15 @@ def compress_pdf():
 
         doc = fitz.open(input_path)
         new_doc = fitz.open()
-        zoom = 0.5
+        zoom = 1  # Keep original resolution
         mat = fitz.Matrix(zoom, zoom)
 
         for page in doc:
-            pix = page.get_pixmap(matrix=mat)
+            pix = page.get_pixmap(matrix=mat, alpha=False)
             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
 
             img_io = io.BytesIO()
-            img.save(img_io, format='JPEG', quality=600)  # Balanced compression
+            img.save(img_io, format='JPEG', quality=85)  # Valid JPEG quality
             img_bytes = img_io.getvalue()
 
             new_page = new_doc.new_page(width=pix.width, height=pix.height)
