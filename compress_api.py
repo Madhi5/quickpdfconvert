@@ -18,7 +18,7 @@ def compress_pdf():
 
         doc = fitz.open(input_path)
         new_doc = fitz.open()
-        zoom = 2  # Keep original resolution
+        zoom = 1  # Keep original resolution
         mat = fitz.Matrix(zoom, zoom)
 
         for page in doc:
